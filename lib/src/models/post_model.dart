@@ -21,11 +21,11 @@ class PostModel {
     return PostModel(
       id: json['id'],
       username: json['username'] ?? "",
-      imagePath: json['imagePath'] ?? "",
+      imagePath: json['image_path'] ?? "",
       caption: json['caption'] ?? "",
       timestamp: json['timestamp'] ?? "",
       likes: json['likes'] ?? 0,
-      likedBy: List<String>.from(json['likedBy'] ?? []), // 👈 From JSON
+      likedBy: (json['likedBy'] as String?)?.split(',') ?? [], // 👈 From JSON
     );
   }
 

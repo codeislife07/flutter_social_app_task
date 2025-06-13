@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_social_app_task/src/widgets/animated_button.dart';
 import 'package:flutter_social_app_task/src/widgets/post_action_button.dart';
 import 'package:image_loader_flutter/Screens/image_loader_widget.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/post_model.dart';
 import '../features/feed/bloc/feed_bloc.dart';
@@ -24,7 +25,7 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isLiked = hasUserLiked();
     print("likes user ${post.likedBy}");
-    print("likes ${post.likes}");
+    print("image path ${post.imagePath}");
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
@@ -48,7 +49,9 @@ class PostCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              post.timestamp,
+              DateFormat(
+                'MMM d, yyyy  h:mm a',
+              ).format(DateTime.parse(post.timestamp)),
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
@@ -62,21 +65,7 @@ class PostCard extends StatelessWidget {
                 );
               }
             },
-            onTap:
-                () => showDialog(
-                  context: context,
-                  builder:
-                      (_) => Dialog(
-                        backgroundColor: Colors.black,
-                        child: InteractiveViewer(
-                          child: ImageLoaderFlutterWidgets(
-                            radius: 0,
-                            circle: false,
-                            image: post.imagePath,
-                          ),
-                        ),
-                      ),
-                ),
+
             child: Stack(
               alignment: Alignment.center,
               children: [

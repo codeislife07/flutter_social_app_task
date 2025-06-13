@@ -122,13 +122,7 @@ class DBProvider {
   ''');
 
     return result.map((row) {
-      final likedBy = (row['likedBy'] as String?)?.split(',') ?? [];
-      print("likes by $likedBy");
-
-      final data = Map<String, dynamic>.from(row); // Create a modifiable copy
-      data['likedBy'] = likedBy;
-
-      return PostModel.fromJson(data);
+      return PostModel.fromJson(row);
     }).toList();
   }
 }
