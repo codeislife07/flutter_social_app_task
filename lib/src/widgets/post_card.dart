@@ -1,10 +1,14 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_social_app_task/src/models/post_model.dart';
 import 'package:flutter_social_app_task/src/widgets/animated_button.dart';
 import 'package:flutter_social_app_task/src/widgets/post_action_button.dart';
-import 'package:image_downloader/image_downloader.dart';
 import 'package:image_loader_flutter/Screens/image_loader_widget.dart';
+import 'package:path_provider/path_provider.dart';
+import '../models/post_model.dart';
 import '../features/feed/bloc/feed_bloc.dart';
 import '../features/feed/bloc/feed_event.dart';
 
@@ -19,6 +23,8 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isLiked = hasUserLiked();
+    print("likes user ${post.likedBy}");
+    print("likes ${post.likes}");
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
@@ -125,10 +131,7 @@ class PostCard extends StatelessWidget {
                   icon: Icons.download,
                   label: 'Save',
                   onPressed: () async {
-                    await ImageDownloader.downloadImage(post.imagePath);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Image saved')),
-                    );
+                    handleImage(post.imagePath, context);
                   },
                 ),
               ],
@@ -137,5 +140,71 @@ class PostCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> handleImage(String imagePath, BuildContext context) async {
+    // Check if the image path is a network URL or a local file path
+    if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
+      // Image is from a network URL, so download it using Dio
+      try {
+        // Get the image name from the URL (e.g., the last part after "/")
+        final fileName = imagePath.split('/').last;
+
+        // Get the temporary directory of the app
+        final tempDir = await getTemporaryDirectory();
+        final savePath = '${tempDir.path}/$fileName';
+
+        // Create an instance of Dio
+        Dio dio = Dio();
+
+        // Download the image from the URL
+        await dio.download(imagePath, savePath);
+
+        // Show success message
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Image saved')));
+      } catch (e) {
+        // Handle errors (e.g., no internet, download failed)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error downloading image: $e')));
+      }
+    } else {
+      // Image is a local file, prompt user for a location to copy the image
+      try {
+        // Show file picker for user to select location
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.any,
+          allowMultiple: false,
+        );
+
+        if (result != null && result.files.isNotEmpty) {
+          final selectedPath = result.files.single.path;
+          if (selectedPath != null) {
+            final destinationPath =
+                '$selectedPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
+            final file = File(imagePath);
+
+            // Copy the local file to the selected location
+            await file.copy(destinationPath);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Image copied to selected location'),
+              ),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('No location selected')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error copying image: $e')));
+      }
+    }
   }
 }

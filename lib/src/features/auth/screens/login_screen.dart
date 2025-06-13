@@ -18,7 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLoggedInUser();
+    Future.delayed(Duration(seconds: 0), () {
+      _checkLoggedInUser();
+    });
   }
 
   Future<void> _checkLoggedInUser() async {

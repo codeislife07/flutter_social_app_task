@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_social_app_task/src/features/auth/bloc/auth_bloc.dart';
-import 'package:flutter_social_app_task/src/features/auth/bloc/auth_event.dart';
-import 'package:flutter_social_app_task/src/features/auth/screens/login_screen.dart';
 import 'package:flutter_social_app_task/src/features/comments/bloc/comments_bloc.dart';
 import 'package:flutter_social_app_task/src/features/comments/screens/comments_screen.dart';
-import 'package:flutter_social_app_task/src/features/feed/bloc/feed_bloc.dart';
-import 'package:flutter_social_app_task/src/features/feed/bloc/feed_event.dart';
-import 'package:flutter_social_app_task/src/features/feed/screens/feed_screen.dart';
-import 'package:flutter_social_app_task/src/features/feed/screens/post_screen.dart';
+import 'src/features/auth/bloc/auth_bloc.dart';
+import 'src/features/auth/bloc/auth_event.dart';
+import 'src/features/feed/bloc/feed_bloc.dart';
+import 'src/features/feed/bloc/feed_event.dart';
+import 'src/features/auth/screens/login_screen.dart';
+import 'src/features/feed/screens/feed_screen.dart';
+import 'src/features/feed/screens/post_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

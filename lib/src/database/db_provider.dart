@@ -101,7 +101,7 @@ class DBProvider {
         'timestamp': DateTime.now().toIso8601String(),
       });
 
-      await db.insert('likes', {
+      await db.insert('liked_posts', {
         'post_id': postId,
         'username': usernames[(i + 2) % usernames.length],
       });
@@ -110,24 +110,25 @@ class DBProvider {
 
   Future<List<PostModel>> fetchPosts() async {
     final db = DBProvider.db;
-    final posts = await db.query('posts', orderBy: 'id DESC');
 
-    List<PostModel> result = [];
+    final result = await db.rawQuery('''
+    SELECT 
+      posts.*, 
+      GROUP_CONCAT(liked_posts.username) AS likedBy
+    FROM posts
+    LEFT JOIN liked_posts ON posts.id = liked_posts.post_id
+    GROUP BY posts.id
+    ORDER BY posts.id DESC
+  ''');
 
-    for (final post in posts) {
-      final likedUsers = await db.query(
-        'liked_posts',
-        columns: ['username'],
-        where: 'post_id = ?',
-        whereArgs: [post['id']],
-      );
+    return result.map((row) {
+      final likedBy = (row['likedBy'] as String?)?.split(',') ?? [];
+      print("likes by $likedBy");
 
-      final likedBy =
-          likedUsers.map((row) => row['username'] as String).toList();
-      post['likedBy'] = likedBy;
-      result.add(PostModel.fromJson(post));
-    }
+      final data = Map<String, dynamic>.from(row); // Create a modifiable copy
+      data['likedBy'] = likedBy;
 
-    return result;
+      return PostModel.fromJson(data);
+    }).toList();
   }
 }

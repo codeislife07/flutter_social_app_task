@@ -39,8 +39,10 @@ dependencies:
   shared_preferences:
   image_picker:
   intl:
-  image_downloader:
-  image_loader_flutter: 
+  dio:
+  file_picker:
+  path_provider:
+  image_loader_flutter:
 
 dev_dependencies:
   flutter_test:

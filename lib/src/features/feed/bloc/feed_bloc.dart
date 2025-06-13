@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_social_app_task/src/database/db_provider.dart';
-import 'package:flutter_social_app_task/src/models/post_model.dart';
+import '../../../database/db_provider.dart';
+import '../../../models/post_model.dart';
 import 'feed_event.dart';
 import 'feed_state.dart';
 
@@ -13,8 +13,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
 
   Future<void> _onLoadFeed(LoadFeed event, Emitter<FeedState> emit) async {
     emit(FeedLoading());
-    final result = await DBProvider.db.query('posts', orderBy: 'id DESC');
-    final posts = result.map((e) => PostModel.fromJson(e)).toList();
+    final posts = await DBProvider().fetchPosts();
     emit(FeedLoaded(posts));
   }
 
