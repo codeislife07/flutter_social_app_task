@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_social_app_task/src/features/auth/bloc/auth_event.dart';
+import 'package:flutter_social_app_task/src/widgets/post_card.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 import '../bloc/feed_bloc.dart';
@@ -79,7 +80,7 @@ class FeedScreen extends StatelessWidget {
                       horizontal: 8,
                       vertical: 4,
                     ),
-                    child: Text("item load"),
+                    child: PostCard(post: post, currentUser: username),
                   );
                 },
               ),
