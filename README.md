@@ -21,11 +21,20 @@ A clean, scalable Flutter application that mimics an Instagram-style feed with l
 
 ---
 
+## 📸 Screenshots
+
+| Feed Screen | Create Post | Comments |
+|-------------|-------------|----------|
+| ![Feed](assets/screenshots/feed.png) | ![Create Post](assets/screenshots/create_post.png) | ![Comments](assets/screenshots/comments.png) |
+
+
+---
+
 ## 📦 Download APK
 
 You can try the app by downloading the APK directly:
 
-🔗 **[Download APK](https://yourserver.com/insta_feed.apk)**  
+🔗 **[Download APK](https://github.com/codeislife07/flutter_social_app_task/assets/apk/app-release.apk)**  
 _(Make sure “Install from unknown sources” is enabled on your Android device.)_
 
 > ✅ Tested on Android 9+ (API 28+). Runs smoothly on physical and emulator devices.
