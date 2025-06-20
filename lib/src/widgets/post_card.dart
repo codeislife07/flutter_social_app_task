@@ -12,7 +12,9 @@ import 'package:flutter_social_app_task/src/features/comments/screens/comments_s
 import 'package:flutter_social_app_task/src/widgets/post_action_button.dart';
 import 'package:image_loader_flutter/Screens/image_loader_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:open_settings_plus/core/open_settings_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/post_model.dart';
 import '../features/feed/bloc/feed_bloc.dart';
 import '../features/feed/bloc/feed_event.dart';
@@ -65,7 +67,6 @@ class PostCard extends StatelessWidget {
                 ),
               ),
             ),
-
             title: Text(
               post.username,
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -90,8 +91,8 @@ class PostCard extends StatelessWidget {
                 onDoubleTap: () {
                   if (!isLiked) {
                     context.read<FeedBloc>().add(
-                      LikePost(postId: post.id, username: currentUser),
-                    );
+                          LikePost(postId: post.id, username: currentUser),
+                        );
                   }
                 },
                 child: ClipRRect(
@@ -141,8 +142,7 @@ class PostCard extends StatelessWidget {
                 icon: isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                 label: 'Like',
                 color: isLiked ? Colors.blue : Colors.grey[700],
-                onTap:
-                    () => context.read<FeedBloc>().add(
+                onTap: () => context.read<FeedBloc>().add(
                       LikePost(postId: post.id, username: currentUser),
                     ),
               ),
@@ -201,6 +201,17 @@ class PostCard extends StatelessWidget {
   }
 
   Future<void> handleImage(String imagePath, BuildContext context) async {
+    var status = Platform.isIOS
+        ? PermissionStatus.granted
+        : await Permission.manageExternalStorage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    } else {
+      Platform.isAndroid
+          ? OpenSettingsPlusAndroid().manageExternalSources()
+          : true;
+      return;
+    }
     try {
       // Prompt user to select a directory
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
@@ -212,7 +223,7 @@ class PostCard extends StatelessWidget {
 
       final fileName = "${DateTime.now().millisecondsSinceEpoch}.png";
       final savePath = '$selectedDirectory/$fileName';
-
+      // File(savePath).create();
       if (imagePath.startsWith('http')) {
         // Download from URL
         final dio = Dio();
