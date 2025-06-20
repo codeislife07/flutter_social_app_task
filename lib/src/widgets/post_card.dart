@@ -210,7 +210,7 @@ class PostCard extends StatelessWidget {
         return;
       }
 
-      final fileName = imagePath.split('/').last;
+      final fileName = "${DateTime.now().millisecondsSinceEpoch}.png";
       final savePath = '$selectedDirectory/$fileName';
 
       if (imagePath.startsWith('http')) {
