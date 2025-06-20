@@ -25,7 +25,7 @@ A clean, scalable Flutter application that mimics an Instagram-style feed with l
 
 | Feed Screen | Create Post | Comments |
 |-------------|-------------|----------|
-| ![Feed](assets/screenshots/feed.png) | ![Create Post](assets/screenshots/create_post.png) | ![Comments](assets/screenshots/comments.png) |
+| ![Feed](assets/screenshots/feed1.png) | ![Create Post](assets/screenshots/create_post1.png) | ![Comments](assets/screenshots/comments1.png) |
 
 
 ---
