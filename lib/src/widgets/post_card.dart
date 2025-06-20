@@ -203,13 +203,14 @@ class PostCard extends StatelessWidget {
   Future<void> handleImage(String imagePath, BuildContext context) async {
     var status = Platform.isIOS
         ? PermissionStatus.granted
-        : await Permission.manageExternalStorage.status;
+        : await Permission.manageExternalStorage.request();
     if (!status.isGranted) {
-      await Permission.storage.request();
-    } else {
-      Platform.isAndroid
-          ? OpenSettingsPlusAndroid().manageExternalSources()
-          : true;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Allow access to manage files permission'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
     try {
