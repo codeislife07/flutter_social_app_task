@@ -202,10 +202,19 @@ class PostCard extends StatelessWidget {
 
   Future<void> handleImage(String imagePath, BuildContext context) async {
     try {
+      // Prompt user to select a directory
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory == null) {
+        // User canceled the picker
+        return;
+      }
+
+      final fileName = imagePath.split('/').last;
+      final savePath = '$selectedDirectory/$fileName';
+
       if (imagePath.startsWith('http')) {
-        final fileName = imagePath.split('/').last;
-        final tempDir = await getTemporaryDirectory();
-        final savePath = '${tempDir.path}/$fileName';
+        // Download from URL
         final dio = Dio();
         await dio.download(imagePath, savePath);
 
@@ -215,29 +224,23 @@ class PostCard extends StatelessWidget {
               children: [
                 Icon(Icons.check_circle, color: Colors.greenAccent),
                 SizedBox(width: 10),
-                Text('Image saved successfully'),
+                Text('Image downloaded successfully'),
               ],
             ),
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
-        final result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
-        );
-        if (result != null && result.files.single.path != null) {
-          final destPath =
-              '${result.files.single.path!}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-          final file = File(imagePath);
-          await file.copy(destPath);
+        // Local image path
+        final file = File(imagePath);
+        await file.copy(savePath);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Image saved to selected location'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image copied to selected location'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
