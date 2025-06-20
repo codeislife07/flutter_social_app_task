@@ -43,6 +43,7 @@ dependencies:
   file_picker:
   path_provider:
   image_loader_flutter:
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:

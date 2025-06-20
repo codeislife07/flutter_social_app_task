@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_social_app_task/common/theme/light_theme.dart';
 import 'package:flutter_social_app_task/src/features/comments/bloc/comments_bloc.dart';
 import 'package:flutter_social_app_task/src/features/comments/screens/comments_screen.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'InstaFeed',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(primarySwatch: Colors.deepPurple),
+        theme: buildLightTheme('en'),
         initialRoute: '/',
         routes: {
           '/': (context) => const LoginScreen(),

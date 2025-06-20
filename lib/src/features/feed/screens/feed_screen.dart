@@ -20,18 +20,8 @@ class FeedScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        title: Text(
-          'Social Feed',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
-        ),
+        title: const Text('Social Feed'),
         actions: [
           IconButton(
             tooltip: 'Logout',
@@ -40,7 +30,7 @@ class FeedScreen extends StatelessWidget {
               final shouldLogout = await showDialog<bool>(
                 context: context,
                 builder:
-                    (context) => AlertDialog(
+                    (_) => AlertDialog(
                       title: const Text('Logout'),
                       content: const Text('Are you sure you want to logout?'),
                       actions: [
@@ -68,10 +58,8 @@ class FeedScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, '/post');
-        },
-        backgroundColor: Theme.of(context).primaryColor,
+        onPressed: () => Navigator.pushNamed(context, '/post'),
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('Post'),
       ),
@@ -82,10 +70,20 @@ class FeedScreen extends StatelessWidget {
           } else if (state is FeedLoaded) {
             if (state.posts.isEmpty) {
               return const Center(
-                child: Text(
-                  'No posts yet.\nBe the first to share something!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.hourglass_empty, size: 60, color: Colors.grey),
+                      SizedBox(height: 12),
+                      Text(
+                        'No posts yet.\nBe the first to share something!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -101,8 +99,8 @@ class FeedScreen extends StatelessWidget {
                   final post = state.posts[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 5,
+                      vertical: 6,
                     ),
                     child: PostCard(post: post, currentUser: username),
                   );
@@ -110,7 +108,13 @@ class FeedScreen extends StatelessWidget {
               ),
             );
           }
-          return const Center(child: Text('Something went wrong 😕'));
+
+          return const Center(
+            child: Text(
+              'Something went wrong 😕',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          );
         },
       ),
     );

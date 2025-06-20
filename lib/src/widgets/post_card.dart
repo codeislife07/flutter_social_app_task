@@ -1,10 +1,14 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_social_app_task/src/widgets/animated_button.dart';
+import 'package:flutter_social_app_task/src/features/auth/bloc/auth_bloc.dart';
+import 'package:flutter_social_app_task/src/features/auth/bloc/auth_state.dart';
+import 'package:flutter_social_app_task/src/features/comments/bloc/comments_bloc.dart';
+import 'package:flutter_social_app_task/src/features/comments/bloc/comments_event.dart';
+import 'package:flutter_social_app_task/src/features/comments/bloc/comments_state.dart';
+import 'package:flutter_social_app_task/src/features/comments/screens/comments_screen.dart';
 import 'package:flutter_social_app_task/src/widgets/post_action_button.dart';
 import 'package:image_loader_flutter/Screens/image_loader_widget.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import '../models/post_model.dart';
 import '../features/feed/bloc/feed_bloc.dart';
 import '../features/feed/bloc/feed_event.dart';
+
+import 'package:timeago/timeago.dart' as timeago;
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -23,177 +29,223 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isLiked = hasUserLiked();
-    print("likes user ${post.likedBy}");
-    print("image path ${post.imagePath}");
+    final isLiked = hasUserLiked();
+    final postTime = DateFormat(
+      'MMM d • h:mm a',
+    ).format(DateTime.parse(post.timestamp));
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 1)),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                22,
+              ), // same radius as CircleAvatar
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: ImageLoaderFlutterWidgets(
+                  image:
+                      'https://i.pravatar.cc/150?u=${post.username}', // random avatar url keyed by username
+                  radius: 22,
+                  circle: true,
+                  onTap: false,
+                ),
+              ),
             ),
-            leading: CircleAvatar(
-              backgroundColor: Colors.grey[300],
-              child: Text(post.username[0].toUpperCase()),
-            ),
+
             title: Text(
               post.username,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              DateFormat(
-                'MMM d, yyyy  h:mm a',
-              ).format(DateTime.parse(post.timestamp)),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              "Rajkot,Gujarat - ${timeago.format(DateTime.parse(post.timestamp))}",
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.more_horiz),
+              onPressed: () {}, // Optional: add menu
             ),
           ),
 
           // Image
-          GestureDetector(
-            onDoubleTap: () {
-              if (!isLiked) {
-                context.read<FeedBloc>().add(
-                  LikePost(postId: post.id, username: currentUser),
-                );
-              }
-            },
-
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 200,
-                    child: ImageLoaderFlutterWidgets(
-                      radius: 0,
-                      circle: false,
-                      image: post.imagePath,
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 200,
+              child: GestureDetector(
+                onDoubleTap: () {
+                  if (!isLiked) {
+                    context.read<FeedBloc>().add(
+                      LikePost(postId: post.id, username: currentUser),
+                    );
+                  }
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: ImageLoaderFlutterWidgets(
+                    image: post.imagePath,
+                    radius: 0,
+                    circle: false,
+                    onTap: false,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
           // Caption
           if (post.caption.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(post.caption),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Text(post.caption, style: const TextStyle(fontSize: 15)),
             ),
 
-          const Divider(),
+          // Like count
+          if (post.likes > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.thumb_up, size: 16, color: Colors.blueAccent),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${post.likes} likes',
+                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
 
-          // Buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                AnimatedLikeButton(
-                  isLiked: isLiked,
-                  likeCount: post.likes,
-                  onTap: () {
-                    context.read<FeedBloc>().add(
+          // const Divider(height: 20),
+
+          // Action buttons: Like, Comment, Save
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _actionButton(
+                context,
+                icon: isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                label: 'Like',
+                color: isLiked ? Colors.blue : Colors.grey[700],
+                onTap:
+                    () => context.read<FeedBloc>().add(
                       LikePost(postId: post.id, username: currentUser),
-                    );
-                  },
-                ),
-                PostActionButton(
-                  icon: Icons.comment,
-                  label: 'Comment',
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/comments/${post.id}');
-                  },
-                ),
-                PostActionButton(
-                  icon: Icons.download,
-                  label: 'Save',
-                  onPressed: () async {
-                    handleImage(post.imagePath, context);
-                  },
-                ),
-              ],
-            ),
+                    ),
+              ),
+              _actionButton(
+                context,
+                icon: Icons.comment_outlined,
+                label: 'Comment',
+                color: Colors.grey[700],
+                onTap: () {
+                  // When loaded, show the bottom sheet with comments
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (context) {
+                      return CommentsScreen(postId: post.id);
+                    },
+                  );
+                },
+              ),
+              _actionButton(
+                context,
+                icon: Icons.download_outlined,
+                label: 'Save',
+                color: Colors.grey[700],
+                onTap: () => handleImage(post.imagePath, context),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  Future<void> handleImage(String imagePath, BuildContext context) async {
-    // Check if the image path is a network URL or a local file path
-    if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
-      // Image is from a network URL, so download it using Dio
-      try {
-        // Get the image name from the URL (e.g., the last part after "/")
-        final fileName = imagePath.split('/').last;
+  Widget _actionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 20, color: color),
+      label: Text(label, style: TextStyle(color: color, fontSize: 14)),
+      style: TextButton.styleFrom(
+        foregroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      ),
+    );
+  }
 
-        // Get the temporary directory of the app
+  Future<void> handleImage(String imagePath, BuildContext context) async {
+    try {
+      if (imagePath.startsWith('http')) {
+        final fileName = imagePath.split('/').last;
         final tempDir = await getTemporaryDirectory();
         final savePath = '${tempDir.path}/$fileName';
-
-        // Create an instance of Dio
-        Dio dio = Dio();
-
-        // Download the image from the URL
+        final dio = Dio();
         await dio.download(imagePath, savePath);
 
-        // Show success message
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Image saved')));
-      } catch (e) {
-        // Handle errors (e.g., no internet, download failed)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error downloading image: $e')));
-      }
-    } else {
-      // Image is a local file, prompt user for a location to copy the image
-      try {
-        // Show file picker for user to select location
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.greenAccent),
+                SizedBox(width: 10),
+                Text('Image saved successfully'),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
         final result = await FilePicker.platform.pickFiles(
-          type: FileType.any,
           allowMultiple: false,
         );
+        if (result != null && result.files.single.path != null) {
+          final destPath =
+              '${result.files.single.path!}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final file = File(imagePath);
+          await file.copy(destPath);
 
-        if (result != null && result.files.isNotEmpty) {
-          final selectedPath = result.files.single.path;
-          if (selectedPath != null) {
-            final destinationPath =
-                '$selectedPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
-            final file = File(imagePath);
-
-            // Copy the local file to the selected location
-            await file.copy(destinationPath);
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Image copied to selected location'),
-              ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('No location selected')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image saved to selected location'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error copying image: $e')));
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save image: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }
